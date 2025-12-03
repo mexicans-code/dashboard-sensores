@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Activity, Wifi, WifiOff, Zap, Bell, Lightbulb, Volume2, VolumeX, RotateCw } from 'lucide-react';
+import { Activity, Wifi, WifiOff, Zap, Bell, Lightbulb, Volume2, VolumeX, RotateCw, Moon, Sun } from 'lucide-react';
 
 const Dashboard = () => {
   const [vibrations, setVibrations] = useState([]);
@@ -9,6 +9,7 @@ const Dashboard = () => {
   const [ledStatus, setLedStatus] = useState(false);
   const [buzzerStatus, setBuzzerStatus] = useState(false);
   const [client, setClient] = useState(null);
+  const [darkMode, setDarkMode] = useState(false);
 
   useEffect(() => {
     const script = document.createElement('script');
@@ -24,6 +25,7 @@ const Dashboard = () => {
         client.disconnect();
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const connectMQTT = () => {
@@ -117,17 +119,38 @@ const Dashboard = () => {
     }
   };
 
+  // Colores según tema
+  const colors = {
+    bg: darkMode ? '#111827' : '#ffffff',
+    text: darkMode ? '#f9fafb' : '#111827',
+    textSecondary: darkMode ? '#9ca3af' : '#6b7280',
+    border: darkMode ? '#374151' : '#e5e7eb',
+    cardBg: darkMode ? '#1f2937' : '#ffffff',
+    primary: '#3b82f6',
+    success: darkMode ? '#10b981' : '#059669',
+    successBg: darkMode ? '#064e3b' : '#d1fae5',
+    warning: darkMode ? '#f59e0b' : '#d97706',
+    warningBg: darkMode ? '#78350f' : '#fffbeb',
+    danger: darkMode ? '#ef4444' : '#dc2626',
+    dangerBg: darkMode ? '#7f1d1d' : '#fee2e2',
+    info: darkMode ? '#06b6d4' : '#0891b2',
+    infoBg: darkMode ? '#164e63' : '#ecfeff'
+  };
+
   return (
     <div style={{
       minHeight: '100vh',
       padding: '40px 20px',
-      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+      background: colors.bg,
+      color: colors.text,
+      transition: 'background-color 0.3s, color 0.3s'
     }}>
       <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
         
         {/* Header */}
         <div style={{
-          borderBottom: '2px solid #3b82f6',
+          borderBottom: `2px solid ${colors.primary}`,
           paddingBottom: '20px',
           marginBottom: '40px'
         }}>
@@ -136,32 +159,58 @@ const Dashboard = () => {
               <h1 style={{
                 fontSize: '28px',
                 fontWeight: '600',
-                color: '#1e40af',
+                color: colors.text,
                 margin: 0,
                 display: 'flex',
                 alignItems: 'center',
                 gap: '10px'
               }}>
-                <Activity color="#3b82f6" size={32} />
+                <Activity color={colors.primary} size={32} aria-hidden="true" />
                 ESP32 SW-420 Dashboard
               </h1>
-              <p style={{ color: '#6b7280', marginTop: '4px', fontSize: '14px', margin: '4px 0 0 0' }}>
+              <p style={{ color: colors.textSecondary, marginTop: '4px', fontSize: '16px', margin: '4px 0 0 0' }}>
                 Monitor y control del sistema
               </p>
             </div>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              padding: '8px 16px',
-              borderRadius: '20px',
-              background: mqttConnected ? '#d1fae5' : '#fee2e2',
-              color: mqttConnected ? '#059669' : '#dc2626',
-              fontSize: '14px',
-              fontWeight: '500'
-            }}>
-              {mqttConnected ? <Wifi size={18} /> : <WifiOff size={18} />}
-              <span>{mqttConnected ? 'Conectado' : 'Desconectado'}</span>
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+              {/* Botón tema */}
+              <button
+                onClick={() => setDarkMode(!darkMode)}
+                aria-label={darkMode ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro'}
+                style={{
+                  padding: '10px',
+                  borderRadius: '8px',
+                  border: `2px solid ${colors.border}`,
+                  background: colors.cardBg,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  minWidth: '44px',
+                  minHeight: '44px',
+                  justifyContent: 'center'
+                }}
+              >
+                {darkMode ? <Sun size={20} color={colors.text} /> : <Moon size={20} color={colors.text} />}
+              </button>
+              
+              {/* Estado conexión */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '10px 16px',
+                borderRadius: '20px',
+                background: mqttConnected ? colors.successBg : colors.dangerBg,
+                color: mqttConnected ? colors.success : colors.danger,
+                fontSize: '15px',
+                fontWeight: '500',
+                minHeight: '44px'
+              }}
+              role="status"
+              aria-live="polite">
+                {mqttConnected ? <Wifi size={18} aria-hidden="true" /> : <WifiOff size={18} aria-hidden="true" />}
+                <span>{mqttConnected ? 'Conectado' : 'Desconectado'}</span>
+              </div>
             </div>
           </div>
         </div>
@@ -175,36 +224,42 @@ const Dashboard = () => {
         }}>
           <div style={{ 
             padding: '24px', 
-            border: '2px solid #3b82f6', 
+            border: `2px solid ${colors.primary}`, 
             borderRadius: '12px',
-            background: '#eff6ff'
+            background: colors.cardBg
           }}>
-            <p style={{ color: '#1e40af', fontSize: '13px', margin: 0, fontWeight: '500' }}>Total Vibraciones</p>
-            <p style={{ fontSize: '36px', fontWeight: '700', color: '#1e3a8a', margin: '8px 0 0 0' }}>
+            <p style={{ color: colors.textSecondary, fontSize: '14px', margin: 0, fontWeight: '500' }}>
+              Total Vibraciones
+            </p>
+            <p style={{ fontSize: '36px', fontWeight: '700', color: colors.text, margin: '8px 0 0 0' }}>
               {totalVibrations}
             </p>
           </div>
 
           <div style={{ 
             padding: '24px', 
-            border: '2px solid #8b5cf6', 
+            border: `2px solid #8b5cf6`, 
             borderRadius: '12px',
-            background: '#f5f3ff'
+            background: colors.cardBg
           }}>
-            <p style={{ color: '#6d28d9', fontSize: '13px', margin: 0, fontWeight: '500' }}>Último Evento</p>
-            <p style={{ fontSize: '18px', fontWeight: '600', color: '#5b21b6', margin: '8px 0 0 0' }}>
+            <p style={{ color: colors.textSecondary, fontSize: '14px', margin: 0, fontWeight: '500' }}>
+              Último Evento
+            </p>
+            <p style={{ fontSize: '18px', fontWeight: '600', color: colors.text, margin: '8px 0 0 0' }}>
               {lastEvent ? lastEvent.time : '—'}
             </p>
           </div>
 
           <div style={{ 
             padding: '24px', 
-            border: '2px solid #10b981', 
+            border: `2px solid ${colors.success}`, 
             borderRadius: '12px',
-            background: '#d1fae5'
+            background: colors.cardBg
           }}>
-            <p style={{ color: '#047857', fontSize: '13px', margin: 0, fontWeight: '500' }}>Estado</p>
-            <p style={{ fontSize: '18px', fontWeight: '600', color: '#065f46', margin: '8px 0 0 0' }}>
+            <p style={{ color: colors.textSecondary, fontSize: '14px', margin: 0, fontWeight: '500' }}>
+              Estado
+            </p>
+            <p style={{ fontSize: '18px', fontWeight: '600', color: colors.text, margin: '8px 0 0 0' }}>
               {mqttConnected ? 'Activo' : 'Inactivo'}
             </p>
           </div>
@@ -219,37 +274,40 @@ const Dashboard = () => {
         }}>
           <div style={{ 
             padding: '24px', 
-            border: '2px solid #f59e0b', 
+            border: `2px solid ${colors.warning}`, 
             borderRadius: '12px',
-            background: '#fffbeb'
+            background: colors.cardBg
           }}>
-            <h3 style={{
-              fontSize: '15px',
+            <h2 style={{
+              fontSize: '16px',
               fontWeight: '600',
-              color: '#92400e',
+              color: colors.text,
               margin: '0 0 16px 0',
               display: 'flex',
               alignItems: 'center',
               gap: '8px'
             }}>
-              <Lightbulb size={18} color="#f59e0b" />
-              LED Externo
-            </h3>
+              <Lightbulb size={18} color={colors.warning} aria-hidden="true" />
+              Control LED Externo
+            </h2>
             <button
               onClick={toggleLed}
               disabled={!mqttConnected}
+              aria-label={ledStatus ? 'Apagar LED' : 'Encender LED'}
+              aria-pressed={ledStatus}
               style={{
                 width: '100%',
-                padding: '12px',
+                padding: '14px',
                 border: 'none',
                 borderRadius: '8px',
                 fontWeight: '600',
-                fontSize: '15px',
+                fontSize: '16px',
                 cursor: mqttConnected ? 'pointer' : 'not-allowed',
-                background: ledStatus ? '#f59e0b' : '#e5e7eb',
-                color: ledStatus ? 'white' : '#6b7280',
+                background: ledStatus ? colors.warning : colors.border,
+                color: ledStatus ? 'white' : colors.text,
                 opacity: mqttConnected ? 1 : 0.5,
-                transition: 'all 0.2s'
+                transition: 'all 0.2s',
+                minHeight: '48px'
               }}
             >
               {ledStatus ? '💡 Encendido' : 'Apagado'}
@@ -258,37 +316,40 @@ const Dashboard = () => {
 
           <div style={{ 
             padding: '24px', 
-            border: '2px solid #f97316', 
+            border: `2px solid #f97316`, 
             borderRadius: '12px',
-            background: '#fff7ed'
+            background: colors.cardBg
           }}>
-            <h3 style={{
-              fontSize: '15px',
+            <h2 style={{
+              fontSize: '16px',
               fontWeight: '600',
-              color: '#9a3412',
+              color: colors.text,
               margin: '0 0 16px 0',
               display: 'flex',
               alignItems: 'center',
               gap: '8px'
             }}>
-              {buzzerStatus ? <Volume2 size={18} color="#f97316" /> : <VolumeX size={18} color="#f97316" />}
-              Buzzer
-            </h3>
+              {buzzerStatus ? <Volume2 size={18} color="#f97316" aria-hidden="true" /> : <VolumeX size={18} color="#f97316" aria-hidden="true" />}
+              Control Buzzer
+            </h2>
             <button
               onClick={toggleBuzzer}
               disabled={!mqttConnected}
+              aria-label={buzzerStatus ? 'Desactivar buzzer' : 'Activar buzzer'}
+              aria-pressed={buzzerStatus}
               style={{
                 width: '100%',
-                padding: '12px',
+                padding: '14px',
                 border: 'none',
                 borderRadius: '8px',
                 fontWeight: '600',
-                fontSize: '15px',
+                fontSize: '16px',
                 cursor: mqttConnected ? 'pointer' : 'not-allowed',
-                background: buzzerStatus ? '#f97316' : '#e5e7eb',
-                color: buzzerStatus ? 'white' : '#6b7280',
+                background: buzzerStatus ? '#f97316' : colors.border,
+                color: buzzerStatus ? 'white' : colors.text,
                 opacity: mqttConnected ? 1 : 0.5,
-                transition: 'all 0.2s'
+                transition: 'all 0.2s',
+                minHeight: '48px'
               }}
             >
               {buzzerStatus ? '🔊 Activo' : 'Inactivo'}
@@ -299,37 +360,39 @@ const Dashboard = () => {
         {/* OTA */}
         <div style={{
           padding: '24px',
-          border: '2px solid #6366f1',
+          border: `2px solid #6366f1`,
           borderRadius: '12px',
           marginBottom: '40px',
-          background: '#eef2ff'
+          background: colors.cardBg
         }}>
-          <h3 style={{
-            fontSize: '15px',
+          <h2 style={{
+            fontSize: '16px',
             fontWeight: '600',
-            color: '#4338ca',
+            color: colors.text,
             margin: '0 0 16px 0',
             display: 'flex',
             alignItems: 'center',
             gap: '8px'
           }}>
-            <RotateCw size={18} color="#6366f1" />
+            <RotateCw size={18} color="#6366f1" aria-hidden="true" />
             Actualización OTA
-          </h3>
+          </h2>
           <button
             onClick={triggerOTA}
             disabled={!mqttConnected}
+            aria-label="Iniciar actualización de firmware OTA"
             style={{
-              padding: '12px 24px',
+              padding: '14px 24px',
               border: 'none',
               borderRadius: '8px',
               fontWeight: '600',
-              fontSize: '15px',
+              fontSize: '16px',
               cursor: mqttConnected ? 'pointer' : 'not-allowed',
               background: '#6366f1',
               color: 'white',
               opacity: mqttConnected ? 1 : 0.5,
-              transition: 'all 0.2s'
+              transition: 'all 0.2s',
+              minHeight: '48px'
             }}
           >
             Iniciar actualización
@@ -339,30 +402,30 @@ const Dashboard = () => {
         {/* History */}
         <div style={{
           padding: '24px',
-          border: '2px solid #06b6d4',
+          border: `2px solid ${colors.info}`,
           borderRadius: '12px',
-          background: '#ecfeff'
+          background: colors.cardBg
         }}>
-          <h3 style={{
-            fontSize: '15px',
+          <h2 style={{
+            fontSize: '16px',
             fontWeight: '600',
-            color: '#0e7490',
+            color: colors.text,
             margin: '0 0 16px 0',
             display: 'flex',
             alignItems: 'center',
             gap: '8px'
           }}>
-            <Bell size={18} color="#06b6d4" />
+            <Bell size={18} color={colors.info} aria-hidden="true" />
             Historial de Vibraciones
-          </h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          </h2>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }} role="log" aria-live="polite">
             {vibrations.length === 0 ? (
               <p style={{
-                color: '#9ca3af',
+                color: colors.textSecondary,
                 textAlign: 'center',
                 padding: '24px 0',
                 margin: 0,
-                fontSize: '14px'
+                fontSize: '15px'
               }}>
                 Sin eventos registrados
               </p>
@@ -372,44 +435,44 @@ const Dashboard = () => {
                   key={idx}
                   style={{
                     padding: '14px',
-                    border: '1px solid #cffafe',
+                    border: `1px solid ${colors.border}`,
                     borderRadius: '8px',
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
-                    fontSize: '14px',
-                    background: 'white'
+                    fontSize: '15px',
+                    background: colors.cardBg
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                     <div style={{
-                      width: '32px',
-                      height: '32px',
+                      width: '36px',
+                      height: '36px',
                       borderRadius: '6px',
-                      background: '#cffafe',
+                      background: colors.infoBg,
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center'
                     }}>
-                      <Zap size={16} color="#0891b2" />
+                      <Zap size={18} color={colors.info} aria-hidden="true" />
                     </div>
                     <div>
-                      <span style={{ color: '#0e7490', fontWeight: '600' }}>
+                      <span style={{ color: colors.text, fontWeight: '600' }}>
                         Vibración #{vib.count}
                       </span>
-                      <span style={{ color: '#9ca3af', marginLeft: '10px', fontSize: '13px' }}>
+                      <span style={{ color: colors.textSecondary, marginLeft: '10px', fontSize: '14px' }}>
                         {vib.timestamp} ms
                       </span>
                     </div>
                   </div>
-                  <span style={{ 
-                    color: '#0891b2', 
+                  <time style={{ 
+                    color: colors.textSecondary, 
                     fontFamily: 'monospace', 
-                    fontSize: '13px',
+                    fontSize: '14px',
                     fontWeight: '500'
                   }}>
                     {vib.time}
-                  </span>
+                  </time>
                 </div>
               ))
             )}
